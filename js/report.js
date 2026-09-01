@@ -44,7 +44,7 @@
       'Analyse ONLY the learner\'s lines and produce a feedback report.\n' +
       'Rules:\n' +
       '- missions_used: from the target expressions list above, include exactly those the learner actually used (any tense or inflection counts). Copy the term text exactly as given. Empty array if none.\n' +
-      '- corrections: at most 5, only real mistakes or clearly unnatural English from the learner. "original" = the learner\'s exact wording, "better" = a natural rewrite, "note_ja" = a short Japanese explanation of why (30-60文字). Ignore speech-recognition typos and punctuation. Empty array if the English was fine.\n' +
+      '- corrections: up to 8. Include BOTH real mistakes AND sentences that are grammatically fine but stiff, textbook-like, or not what a native would actually say — for those, show the natural native phrasing. Be generous: if the learner produced several improvable lines, cover them all (aim for at least 3 when material exists). "original" = the learner\'s exact wording, "better" = how a native would say it in casual conversation, "note_ja" = a short Japanese explanation of why (30-60文字). Ignore speech-recognition typos and punctuation.\n' +
       '- new_expressions: at most 4 useful words/idioms/phrasal verbs at intermediate level that would have fit this exact conversation and that the learner did NOT use. "meaning_ja" = short Japanese meaning, "example_en" = one short natural English sentence.\n' +
       '- praise_ja: 2-3 sentences of specific, warm Japanese praise about what the learner did well in this conversation.\n\n' +
       'Return ONLY this JSON object:\n' +
@@ -58,7 +58,7 @@
       corrections: arr(r.corrections).map(function (c) {
         c = c || {};
         return { original: str(c.original), better: str(c.better), note_ja: str(c.note_ja) };
-      }).filter(function (c) { return c.original && c.better; }).slice(0, 5),
+      }).filter(function (c) { return c.original && c.better; }).slice(0, 8),
       new_expressions: arr(r.new_expressions).map(function (n) {
         n = n || {};
         return { term: str(n.term), meaning_ja: str(n.meaning_ja), example_en: str(n.example_en) };
@@ -71,7 +71,7 @@
     return Promise.resolve().then(function () {
       return window.LLM.chat(
         [{ role: 'user', content: buildPrompt(history, missions) }],
-        { system: SYSTEM, json: true, maxTokens: 1200 }
+        { system: SYSTEM, json: true, maxTokens: 2000 }
       );
     }).then(normalize);
   }

@@ -44,17 +44,28 @@
     level = Math.min(Math.floor(level), INTERVALS.length - 1);
     let used = Number(srs.used);
     if (!isFinite(used) || used < 0) used = 0;
+    let reviews = Number(srs.reviews);
+    if (!isFinite(reviews) || reviews < 0) reviews = 0;
     const dueStr = typeof srs.due === 'string' && DATE_RE.test(srs.due) ? srs.due : today;
+    const examples = Array.isArray(c.examples)
+      ? c.examples
+          .map((e) => ({ en: String((e && e.en) || ''), ja: String((e && e.ja) || '') }))
+          .filter((e) => e.en)
+          .slice(0, 12)
+      : [];
     return {
       id: typeof c.id === 'string' && c.id ? c.id : uuid(),
       term,
       meaning: String(c.meaning == null ? '' : c.meaning),
       example: String(c.example == null ? '' : c.example),
+      examples,
       type: c.type === 'idiom' ? 'idiom' : 'word',
       source: String(c.source || 'user'),
-      srs: { level, due: dueStr, used: Math.floor(used) },
+      srs: { level, due: dueStr, used: Math.floor(used), reviews: Math.floor(reviews) },
     };
   }
+
+  const SEED_VERSION = 2;
 
   function load() {
     const today = todayStr();
@@ -64,12 +75,28 @@
         .map((c) => sanitize({ ...c, source: 'seed', srs: { level: 0, due: today, used: 0 } }, today))
         .filter(Boolean);
       Store.set(KEY, seeded);
+      Store.set('seedVersion', SEED_VERSION);
       return seeded;
     }
     const out = [];
     for (const c of raw) {
       const s = sanitize(c, today);
       if (s) out.push(s);
+    }
+    // one-time merge: newly shipped seed cards join an existing deck
+    if (Store.get('seedVersion', 1) < SEED_VERSION && Array.isArray(window.SEED_CARDS)) {
+      const have = new Set(out.map((c) => c.term.toLowerCase()));
+      let added = false;
+      for (const c of window.SEED_CARDS) {
+        const s = sanitize({ ...c, source: 'seed', srs: { level: 0, due: today, used: 0 } }, today);
+        if (s && !have.has(s.term.toLowerCase())) {
+          out.push(s);
+          have.add(s.term.toLowerCase());
+          added = true;
+        }
+      }
+      Store.set('seedVersion', SEED_VERSION);
+      if (added) Store.set(KEY, out);
     }
     return out;
   }
@@ -124,6 +151,7 @@
     const card = list.find((c) => c.id === id);
     if (!card) return null;
     const today = todayStr();
+    card.srs.reviews = (card.srs.reviews || 0) + 1;
     let level = card.srs.level;
     if (grade === 0) {
       level = Math.max(0, level - 2);
@@ -144,7 +172,12 @@
     const list = load();
     if (!n || !list.length) return [];
     const today = todayStr();
-    const sorted = list.slice().sort((a, b) => {
+    // Missions must be expressions the learner has actually studied
+    // (reviewed in flashcards or already used in a conversation) —
+    // an unseen seed card is not something they can be asked to use.
+    const studied = list.filter((c) => (c.srs.reviews || 0) > 0 || (c.srs.used || 0) > 0 || c.srs.level > 0);
+    const base = studied.length ? studied : list;
+    const sorted = base.slice().sort((a, b) => {
       const aDue = a.srs.due <= today ? 0 : 1;
       const bDue = b.srs.due <= today ? 0 : 1;
       if (aDue !== bDue) return aDue - bDue;
@@ -184,7 +217,25 @@
     };
   }
 
-  window.Vocab = { all, add, get, remove, due, review, pickMission, markUsed, stats };
+  function addExamples(id, arr) {
+    const list = load();
+    const card = list.find((c) => c.id === id);
+    if (!card) return null;
+    const clean = (Array.isArray(arr) ? arr : [])
+      .map((e) => ({ en: String((e && e.en) || '').trim(), ja: String((e && e.ja) || '').trim() }))
+      .filter((e) => e.en);
+    const have = new Set([card.example, ...card.examples.map((e) => e.en)].map((s) => String(s).toLowerCase()));
+    for (const e of clean) {
+      if (have.has(e.en.toLowerCase())) continue;
+      card.examples.push(e);
+      have.add(e.en.toLowerCase());
+    }
+    card.examples = card.examples.slice(0, 12);
+    save(list);
+    return card;
+  }
+
+  window.Vocab = { all, add, get, remove, due, review, pickMission, markUsed, stats, addExamples };
 
   // ---------------- VocabUI ----------------
 
@@ -194,6 +245,7 @@
   let sessionFlipped = false;
   let listFilter = 'all';
   let inSession = false;
+  let sessionReviewed = [];
 
   function el(html) {
     const div = document.createElement('div');
@@ -336,18 +388,106 @@
     listBox.innerHTML = '';
     items.forEach((c) => {
       const row = el(`
-        <div class="card row" style="align-items:center;justify-content:space-between;">
+        <div class="card row" style="align-items:center;justify-content:space-between;cursor:pointer;">
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;">${escapeHtml(c.term)} <span class="badge">${c.type === 'idiom' ? '熟語' : '単語'}</span></div>
             <div class="muted" style="font-size:13px;">${escapeHtml(c.meaning)}</div>
           </div>
           <button class="btn btn-danger" data-id="${c.id}">削除</button>
         </div>`);
-      row.querySelector('button').addEventListener('click', () => {
+      row.querySelector('button').addEventListener('click', (ev) => {
+        ev.stopPropagation();
         remove(c.id);
         renderMain();
       });
+      row.addEventListener('click', () => openCardModal(c.id));
       listBox.appendChild(row);
+    });
+  }
+
+  // ---- card detail modal: meaning + growing list of AI examples ----
+
+  function speakSafe(text) {
+    try {
+      const s = (window.Store && Store.get('settings', {})) || {};
+      if (window.Speech && Speech.speak) Speech.speak(text, { rate: s.ttsRate || 0.9 });
+    } catch (e) { /* ignore */ }
+  }
+
+  function openCardModal(id) {
+    const card = get(id);
+    if (!card) return;
+    const back = el(`
+      <div class="modal-backdrop">
+        <div class="modal fade-in">
+          <div class="row" style="justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;">${escapeHtml(card.term)} <span class="badge">${card.type === 'idiom' ? '熟語' : '単語'}</span></h3>
+            <button class="btn" data-act="speak" type="button">🔊</button>
+          </div>
+          <p style="font-size:17px;margin:8px 0;">${escapeHtml(card.meaning) || '<span class="muted">(意味未登録)</span>'}</p>
+          <div id="card-examples"></div>
+          <div class="row" style="margin-top:12px;">
+            <button class="btn btn-primary" data-act="more" type="button">例文を追加(AI)</button>
+            <button class="btn" data-act="close" type="button">閉じる</button>
+          </div>
+        </div>
+      </div>`);
+    document.body.appendChild(back);
+    const close = () => { if (back.parentNode) back.parentNode.removeChild(back); };
+    back.addEventListener('click', (e) => { if (e.target === back) close(); });
+    back.querySelector('[data-act="close"]').addEventListener('click', close);
+    back.querySelector('[data-act="speak"]').addEventListener('click', () => speakSafe(card.term));
+
+    const box = back.querySelector('#card-examples');
+    const renderExamples = () => {
+      const cur = get(id) || card;
+      const list = [];
+      if (cur.example) list.push({ en: cur.example, ja: '' });
+      list.push(...(cur.examples || []));
+      box.innerHTML = list.length
+        ? list.map((e, i) => `
+            <div style="padding:8px 0;border-top:1px solid rgba(255,255,255,0.08);">
+              <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px;">
+                <span style="flex:1;">${escapeHtml(e.en)}</span>
+                <button class="btn" data-say="${i}" type="button" style="min-height:34px;padding:5px 10px;">🔊</button>
+              </div>
+              ${e.ja ? `<div class="muted" style="margin-top:2px;">${escapeHtml(e.ja)}</div>` : ''}
+            </div>`).join('')
+        : '<p class="muted">例文がまだありません。「例文を追加(AI)」を押してください。</p>';
+      box.querySelectorAll('[data-say]').forEach((b) => {
+        b.addEventListener('click', () => { const e = list[Number(b.dataset.say)]; if (e) speakSafe(e.en); });
+      });
+    };
+    renderExamples();
+
+    back.querySelector('[data-act="more"]').addEventListener('click', async function () {
+      const btn = this;
+      const orig = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '…';
+      try {
+        const cur = get(id) || card;
+        const known = [cur.example, ...(cur.examples || []).map((e) => e.en)].filter(Boolean);
+        const res = await window.LLM.chat(
+          [{ role: 'user', content:
+            `Expression: "${cur.term}" (Japanese meaning: ${cur.meaning})\n` +
+            (known.length ? `Already shown examples (do NOT repeat these):\n${known.join('\n')}\n` : '') +
+            'Give 3 new short natural conversational English example sentences using this expression, each with a Japanese translation.' }],
+          {
+            system: 'You are an example-sentence generator for a Japanese intermediate English learner. Respond ONLY with JSON: {"examples":[{"en":"English sentence","ja":"自然な日本語訳"},...]} (exactly 3 items).',
+            json: true,
+          }
+        );
+        const arr = res && Array.isArray(res.examples) ? res.examples : [];
+        if (!arr.length) throw new Error('例文を取得できませんでした');
+        addExamples(id, arr);
+        renderExamples();
+      } catch (e) {
+        window.App && window.App.toast && window.App.toast(e.message || 'エラーが発生しました');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
     });
   }
 
@@ -355,6 +495,7 @@
     sessionQueue = due();
     sessionIdx = 0;
     sessionFlipped = false;
+    sessionReviewed = [];
     if (sessionQueue.length === 0) {
       window.App && window.App.toast && window.App.toast('今日復習する単語はありません');
       return;
@@ -414,6 +555,7 @@
       btn.addEventListener('click', () => {
         const grade = Number(btn.dataset.grade);
         review(card.id, grade);
+        if (grade >= 1) sessionReviewed.push(card);
         sessionIdx++;
         renderSession();
       });
@@ -435,7 +577,19 @@
     root.appendChild(wrap);
     const spacer = el('<div class="spacer"></div>');
     root.appendChild(spacer);
-    const backBtn = el('<button class="btn btn-primary" style="width:100%">戻る</button>');
+    // close the study -> speak loop: take what was just reviewed straight
+    // into a conversation as the missions
+    if (sessionReviewed.length && window.Talk && typeof window.Talk.startWithMissions === 'function') {
+      const talkBtn = el('<button class="btn btn-primary" style="width:100%">いま復習した表現で会話する</button>');
+      talkBtn.addEventListener('click', () => {
+        const pick = sessionReviewed.slice(-3);
+        renderMain();
+        window.Talk.startWithMissions(pick);
+      });
+      root.appendChild(talkBtn);
+      root.appendChild(el('<div class="spacer"></div>'));
+    }
+    const backBtn = el('<button class="btn" style="width:100%">戻る</button>');
     backBtn.addEventListener('click', () => renderMain());
     root.appendChild(backBtn);
   }

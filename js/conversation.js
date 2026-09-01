@@ -246,7 +246,7 @@
             '<strong>今日のミッション</strong>' +
             '<button class="btn" id="talk-reroll" type="button">引き直す</button>' +
           '</div>' +
-          '<p class="muted">会話の中でこの表現を使ってみよう</p>' +
+          '<p class="muted">会話の中でこの表現を使ってみよう(単語帳で復習した表現から選ばれます)</p>' +
           '<div class="row" id="talk-mission-preview" style="flex-wrap:wrap"></div>' +
         '</div>' +
         '<div class="card">' +
@@ -254,7 +254,7 @@
             '<label for="talk-scenario">シーン</label>' +
             '<select id="talk-scenario">' + opts + '</select>' +
           '</div>' +
-          '<p class="muted">Emma（ネイティブのAIパートナー）と英語で話します。マイクを押して話しかけてください。</p>' +
+          '<p class="muted">Emma（ネイティブのAIパートナー）と英語で話します。マイクを押して話しかけてください。会話中、自分の発言をタップすると「ネイティブならこう言う」が見られます。</p>' +
         '</div>' +
         '<button class="btn btn-primary" id="talk-begin" type="button">会話をはじめる</button>' +
         '<div class="spacer"></div>' +
@@ -309,6 +309,13 @@
 
     v.innerHTML =
       '<div class="talk-chat fade-in">' +
+        '<div class="avatar-row">' +
+          '<div class="avatar-box" id="emma-box"></div>' +
+          '<div>' +
+            '<div class="avatar-name">Emma</div>' +
+            '<div class="avatar-status" id="emma-status"></div>' +
+          '</div>' +
+        '</div>' +
         '<div class="row" id="talk-chips"></div>' +
         '<div class="msg-list" id="talk-msgs"></div>' +
         '<div class="talk-controls">' +
@@ -335,6 +342,8 @@
     el.input = v.querySelector('#talk-input');
     el.send = v.querySelector('#talk-send');
     el.end = v.querySelector('#talk-end');
+
+    try { if (window.Avatar) Avatar.mount(v.querySelector('#emma-box')); } catch (e) {}
 
     renderChips();
 
@@ -373,7 +382,12 @@
     el.msgs.addEventListener('scroll', function () { state.stick = atBottom(); });
     el.msgs.addEventListener('click', function (e) {
       var w = e.target.closest ? e.target.closest('.word') : null;
-      if (w) openLookup(w.dataset.word || w.textContent, w.closest('.msg') ? w.closest('.msg').dataset.raw || '' : '');
+      if (w) {
+        openLookup(w.dataset.word || w.textContent, w.closest('.msg') ? w.closest('.msg').dataset.raw || '' : '');
+        return;
+      }
+      var mine = e.target.closest ? e.target.closest('.msg.user') : null;
+      if (mine) openRecast(mine);
     });
 
     if (!ttsOK) toast('この端末では音声読み上げが使えません。テキストで表示します。');
@@ -450,6 +464,9 @@
     try { if (window.Speech && Speech.cancelSpeak) Speech.cancelSpeak(); } catch (e) {}
     state.listening = true;
     el.mic.classList.add('listening');
+    avatarEmotion('curious');
+    /* cancelSpeak's async onEnd clears the status a tick later; set ours after it */
+    setTimeout(function () { if (state.listening) avatarStatus('聞いています…'); }, 60);
     try {
       Speech.listen({
         onResult: function (text, isFinal) {
@@ -482,6 +499,7 @@
   function stopListening(skipStop) {
     state.listening = false;
     if (el.mic) el.mic.classList.remove('listening');
+    avatarStatus('');
     if (!skipStop) {
       try { if (window.Speech && Speech.stopListening) Speech.stopListening(); } catch (e) {}
     }
@@ -503,11 +521,48 @@
     releaseGhost();
   }
 
+  function avatarTalk(on) {
+    try {
+      if (window.Avatar) Avatar.setTalking(on);
+      var b = view().querySelector('#emma-box');
+      if (b) b.classList.toggle('talking', !!on);
+      avatarStatus(on ? '話しています…' : '');
+    } catch (e) {}
+  }
+
+  function avatarEmotion(name) {
+    try { if (window.Avatar) Avatar.setEmotion(name); } catch (e) {}
+  }
+
+  function avatarStatus(text) {
+    try {
+      var st = view().querySelector('#emma-status');
+      if (st) st.textContent = text || '';
+    } catch (e) {}
+  }
+
+  /* "[happy] Hi there!" -> {emotion, text} */
+  var EMOTION_RE = /^\s*\[([a-zA-Z]+)\]\s*/;
+  function stripEmotion(raw) {
+    var text = String(raw == null ? '' : raw).trim();
+    var emotion = 'happy';
+    var m = text.match(EMOTION_RE);
+    if (m) {
+      var tag = m[1].toLowerCase();
+      if (window.Avatar && Avatar.EMOTIONS.indexOf(tag) >= 0) emotion = tag;
+      text = text.slice(m[0].length).trim();
+    }
+    return { emotion: emotion, text: text };
+  }
+
   function speak(text) {
     try {
       var s = settings();
-      if (window.Speech && Speech.speak) Speech.speak(text, { rate: s.ttsRate || 0.9 });
-    } catch (e) {}
+      if (window.Speech && Speech.speak) {
+        avatarTalk(true);
+        Speech.speak(text, { rate: s.ttsRate || 0.9, onEnd: function () { avatarTalk(false); } });
+      }
+    } catch (e) { avatarTalk(false); }
   }
 
   /* ---------- conversation flow ---------- */
@@ -521,7 +576,12 @@
       '(never mention that these are targets): ' + terms + '. ' +
       'Match the learner\'s level (intermediate); do not use Japanese. ' +
       'Never use lists, emoji, stage directions or markdown — plain spoken sentences only. ' +
-      'React warmly to what the learner says before asking the next question.';
+      'React warmly to what the learner says before asking the next question. ' +
+      'When the learner makes a mistake or says something unnatural, casually recast it the way a native ' +
+      'would say it at the start of your reply (a conversational echo, not a lesson) before continuing. ' +
+      'Begin EVERY reply with exactly one emotion tag in square brackets chosen from: ' +
+      '[happy] [excited] [laugh] [surprised] [thinking] [sad] [curious] [neutral] — whichever matches your reply. ' +
+      'The tag is stripped before display; never mention it and never use more than one.';
   }
 
   function chatHistory() {
@@ -557,12 +617,16 @@
       { system: systemPrompt(), maxTokens: 200 }
     ).then(function (reply) {
       if (t && t.parentNode) t.parentNode.removeChild(t);
-      var text = String(reply || '').trim() || 'Hi! I\'m Emma. How has your day been so far?';
+      var r = stripEmotion(reply);
+      var text = r.text || 'Hi! I\'m Emma. How has your day been so far?';
+      avatarEmotion(r.emotion);
       state.history.push({ role: 'assistant', content: text });
       appendMsg('ai', text);
       speak(text);
     }).catch(function (err) {
       if (t && t.parentNode) t.parentNode.removeChild(t);
+      avatarEmotion('sad');
+      avatarStatus('');
       toast(err && err.message ? err.message : '接続に失敗しました');
     }).then(function () { setBusy(false); });
   }
@@ -590,17 +654,22 @@
   function replyToUser() {
     var t = appendTyping();
     setBusy(true);
+    avatarEmotion('thinking');
+    avatarStatus('考えています…');
     safeChat(chatHistory(), { system: systemPrompt(), maxTokens: 200 })
       .then(function (reply) {
         if (t && t.parentNode) t.parentNode.removeChild(t);
-        var text = String(reply || '').trim();
-        if (!text) throw new Error('返答を取得できませんでした');
-        state.history.push({ role: 'assistant', content: text });
-        appendMsg('ai', text);
-        speak(text);
+        var r = stripEmotion(reply);
+        if (!r.text) throw new Error('返答を取得できませんでした');
+        avatarEmotion(r.emotion);
+        state.history.push({ role: 'assistant', content: r.text });
+        appendMsg('ai', r.text);
+        speak(r.text);
       })
       .catch(function (err) {
         if (t && t.parentNode) t.parentNode.removeChild(t);
+        avatarEmotion('sad');
+        avatarStatus('');
         toast(err && err.message ? err.message : '接続に失敗しました');
       })
       .then(function () { setBusy(false); });
@@ -669,6 +738,70 @@
           toast(e && e.message ? e.message : '追加できませんでした');
         }
       });
+    }).catch(function (err) {
+      body.innerHTML = '<p class="muted">' + esc(err && err.message ? err.message : '取得に失敗しました') + '</p>';
+    });
+  }
+
+  /* ---------- "how a native would say it" for the learner's own line ---------- */
+
+  function openRecast(msgEl) {
+    var text = (msgEl && msgEl.dataset && msgEl.dataset.raw) || '';
+    if (!text.trim()) return;
+    var back = document.createElement('div');
+    back.className = 'modal-backdrop';
+    back.innerHTML =
+      '<div class="modal fade-in">' +
+        '<h3 style="margin:0 0 6px">ネイティブならこう言う</h3>' +
+        '<p class="muted" style="margin:0 0 8px">あなた: ' + esc(text) + '</p>' +
+        '<div id="recast-body"><p class="muted">分析しています…</p></div>' +
+        '<div class="row" style="margin-top:12px">' +
+          '<button class="btn" data-act="close" type="button">閉じる</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(back);
+    function close() { if (back.parentNode) back.parentNode.removeChild(back); }
+    back.addEventListener('click', function (e) { if (e.target === back) close(); });
+    back.querySelector('[data-act="close"]').addEventListener('click', close);
+    var body = back.querySelector('#recast-body');
+
+    function renderResult(res) {
+      var items = (res && Array.isArray(res.better)) ? res.better : [];
+      var html = '';
+      if (res && res.comment_ja) html += '<p style="margin:6px 0">' + esc(res.comment_ja) + '</p>';
+      items.slice(0, 3).forEach(function (b) {
+        if (!b || !b.en) return;
+        html += '<div style="padding:8px 0;border-top:1px solid rgba(255,255,255,0.08)">' +
+          '<p style="margin:0 0 2px">' + esc(b.en) + '</p>' +
+          (b.note_ja ? '<p class="muted" style="margin:0;font-size:13px">' + esc(b.note_ja) + '</p>' : '') +
+        '</div>';
+      });
+      body.innerHTML = html || '<p class="muted">自然な英語です。このままでOK！</p>';
+    }
+
+    /* cache on the bubble so tapping twice does not spend quota twice */
+    if (msgEl.dataset.recast) {
+      try { renderResult(JSON.parse(msgEl.dataset.recast)); return; } catch (e) { /* refetch */ }
+    }
+
+    var idx = -1;
+    for (var i = 0; i < state.history.length; i++) {
+      if (state.history[i].role === 'user' && state.history[i].content === text) { idx = i; break; }
+    }
+    var prevAi = idx > 0 ? state.history[idx - 1].content : '';
+
+    safeChat([{ role: 'user', content:
+      (prevAi ? 'Context — the other speaker just said: "' + prevAi + '"\n' : '') +
+      'The learner said: "' + text + '"\n' +
+      'Show how a native English speaker would express the same thing in casual conversation.' }], {
+      system: 'You coach a Japanese intermediate English learner. Respond ONLY with JSON: ' +
+        '{"comment_ja":"一言の総評(日本語・30文字以内)","better":[{"en":"natural native phrasing","note_ja":"なぜ自然か(日本語・40文字以内)"}]} ' +
+        'with 1-3 "better" items. If the learner\'s sentence is already natural, return an empty "better" array and say so in comment_ja.',
+      json: true,
+      maxTokens: 500
+    }).then(function (res) {
+      try { msgEl.dataset.recast = JSON.stringify(res); } catch (e) { /* ignore */ }
+      renderResult(res);
     }).catch(function (err) {
       body.innerHTML = '<p class="muted">' + esc(err && err.message ? err.message : '取得に失敗しました') + '</p>';
     });
@@ -745,9 +878,18 @@
     releaseGhost();
   }
 
+  /* entry point for the vocab tab: talk right after reviewing */
+  function startWithMissions(cards) {
+    if (Array.isArray(cards) && cards.length) state.missions = cards.slice(0, 3);
+    var tab = document.querySelector('.tab[data-view="talk"]');
+    if (tab) tab.click();
+    start();
+  }
+
   window.Talk = {
     init: function () { state.missions = pickMissions(3); renderStart(); },
     start: start,
+    startWithMissions: startWithMissions,
     reset: reset,
     suspend: suspend,
     _matchesTerm: matchesTerm
