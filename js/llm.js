@@ -259,6 +259,17 @@
           return await callGemini(Object.assign({}, st, { model: found }), msgs, system, json, maxTokens);
         }
       }
+      /* free-tier rate limit -> one retry on the lite model, which has a
+         much higher free quota. Not cached: go back to the better model
+         next call, it may have recovered. */
+      if (!userPinned && /APIエラー 429/.test(e.message || '')) {
+        var lite = 'gemini-flash-lite-latest';
+        if (modelFor(st) !== lite) {
+          try {
+            return await callGemini(Object.assign({}, st, { model: lite }), msgs, system, json, maxTokens);
+          } catch (e3) { /* fall through to the original, clearer error */ }
+        }
+      }
       throw e;
     }
   }
