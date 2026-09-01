@@ -464,8 +464,8 @@ body.kb-open .tabbar{transform:translateY(110%);pointer-events:none;}
   padding:2px 0 8px;
 }
 .avatar-box{
-  width:56px;
-  height:56px;
+  width:84px;
+  height:84px;
   border-radius:50%;
   overflow:hidden;
   flex-shrink:0;
@@ -474,15 +474,15 @@ body.kb-open .tabbar{transform:translateY(110%);pointer-events:none;}
   transition:box-shadow 0.3s;
 }
 .avatar-box svg{display:block;width:100%;height:100%;}
-.avatar-name{font-weight:700;font-size:14px;}
+.avatar-name{font-weight:700;font-size:16px;}
 .avatar-status{font-size:11px;color:var(--text-secondary);min-height:14px;transition:opacity 0.2s;}
 .emma-svg .emma-tilt{transition:transform 0.35s ease;transform-origin:60px 60px;}
 .emma-svg .emma-brow-l,.emma-svg .emma-brow-r{transition:transform 0.25s ease;}
 .emma-svg .emma-eyes-open,.emma-svg .emma-eyes-closed,.emma-svg .emma-blush,.emma-svg .emma-sparkle{transition:opacity 0.25s ease;}
-.emma-svg .emma-eye-blink{animation:emma-blink 4.6s infinite;transform-origin:60px 62px;}
+.emma-svg .emma-eye-blink{animation:emma-blink 4.6s infinite;transform-origin:60px 66px;}
 @keyframes emma-blink{0%,94%,100%{transform:scaleY(1);}96.5%{transform:scaleY(0.08);}}
 .emma-svg.talking .emma-mouth{opacity:0;}
-.emma-svg.talking .emma-mouth-talk{opacity:1;animation:emma-talk 0.28s infinite alternate ease-in-out;transform-origin:60px 80px;}
+.emma-svg.talking .emma-mouth-talk{opacity:1;animation:emma-talk 0.28s infinite alternate ease-in-out;transform-origin:60px 82px;}
 @keyframes emma-talk{from{transform:scaleY(0.35);}to{transform:scaleY(1.1);}}
 .avatar-box.talking{box-shadow:0 0 18px rgba(70,195,255,0.5);}
 
