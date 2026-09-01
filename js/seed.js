@@ -1,0 +1,37 @@
+// seed.js - starter vocabulary cards (idioms & phrasal verbs for casual native conversation)
+(function () {
+  window.SEED_CARDS = [
+    { term: 'run into', meaning: '(人に)偶然会う、出くわす', example: 'I ran into my old classmate at the station yesterday.', type: 'idiom' },
+    { term: 'figure out', meaning: '理解する、解決する', example: 'I finally figured out how to fix the printer.', type: 'idiom' },
+    { term: 'catch up', meaning: '近況を語り合う、追いつく', example: "Let's grab coffee and catch up sometime this week.", type: 'idiom' },
+    { term: "I'd rather", meaning: 'むしろ〜したい', example: "I'd rather stay home tonight than go to the party.", type: 'idiom' },
+    { term: 'kind of', meaning: 'ちょっと、まあまあ', example: "I'm kind of tired after that long meeting.", type: 'idiom' },
+    { term: 'it depends', meaning: '場合による', example: 'Do you want to go? It depends on the weather.', type: 'idiom' },
+    { term: 'hang out', meaning: '遊ぶ、一緒に過ごす', example: 'We usually hang out at the mall on weekends.', type: 'idiom' },
+    { term: 'look forward to', meaning: '楽しみにする', example: "I'm really looking forward to the trip next month.", type: 'idiom' },
+    { term: 'end up', meaning: '結局〜になる', example: 'We ended up watching movies all night.', type: 'idiom' },
+    { term: 'come up with', meaning: '(アイデアなどを)思いつく', example: 'She came up with a great plan for the party.', type: 'idiom' },
+    { term: 'deal with', meaning: '対処する、扱う', example: 'I have to deal with a lot of emails today.', type: 'idiom' },
+    { term: 'work out', meaning: 'うまくいく、運動する', example: "Don't worry, everything will work out fine.", type: 'idiom' },
+    { term: 'turn out', meaning: '結局〜だとわかる', example: 'The movie turned out to be really good.', type: 'idiom' },
+    { term: 'make sense', meaning: '筋が通る、納得できる', example: 'Your explanation makes a lot of sense.', type: 'idiom' },
+    { term: 'no big deal', meaning: '大したことない', example: "Don't worry about it, it's no big deal.", type: 'idiom' },
+    { term: 'on second thought', meaning: 'よく考えてみると', example: "On second thought, let's just stay in tonight.", type: 'idiom' },
+    { term: 'give it a shot', meaning: 'とりあえずやってみる', example: "I've never tried sushi, but I'll give it a shot.", type: 'idiom' },
+    { term: 'get along with', meaning: '(人と)うまくやる', example: 'I get along with most of my coworkers.', type: 'idiom' },
+    { term: 'put off', meaning: '延期する、先延ばしにする', example: "Let's not put off this decision any longer.", type: 'idiom' },
+    { term: 'show up', meaning: '姿を現す、来る', example: 'He didn\'t show up for the meeting this morning.', type: 'idiom' },
+    { term: 'take off', meaning: '(仕事などを)休む、離陸する、脱ぐ', example: "I'm going to take a day off this Friday.", type: 'idiom' },
+    { term: 'bring up', meaning: '話題に出す、育てる', example: "I don't want to bring up that topic again.", type: 'idiom' },
+    { term: 'get over', meaning: '(病気や失恋から)立ち直る', example: 'It took her a while to get over the breakup.', type: 'idiom' },
+    { term: 'count on', meaning: '頼りにする、当てにする', example: 'You can always count on me for help.', type: 'idiom' },
+    { term: 'sort of', meaning: 'いくらか、まあまあ', example: "I'm sort of interested, but I'm not sure yet.", type: 'idiom' },
+    { term: 'get used to', meaning: '〜に慣れる', example: 'It took a few weeks to get used to the new job.', type: 'idiom' },
+    { term: 'pull off', meaning: '(難しいことを)成功させる', example: 'I can\'t believe she pulled off that presentation.', type: 'idiom' },
+    { term: 'break a leg', meaning: '頑張って、成功を祈る', example: "You have a big audition tomorrow. Break a leg!", type: 'idiom' },
+    { term: 'once in a while', meaning: 'たまに、時々', example: 'We go hiking once in a while on weekends.', type: 'idiom' },
+    { term: 'piece of cake', meaning: '朝飯前、簡単なこと', example: "Don't worry, this test will be a piece of cake.", type: 'idiom' },
+    { term: 'let someone down', meaning: '(人を)がっかりさせる', example: "I'm sorry, I didn't mean to let you down.", type: 'idiom' },
+    { term: 'get carried away', meaning: '調子に乗る、我を忘れる', example: "Sorry, I got carried away talking about my trip.", type: 'idiom' }
+  ];
+})();

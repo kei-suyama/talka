@@ -1,0 +1,11 @@
+{
+  "name": "TALKA",
+  "short_name": "TALKA",
+  "display": "standalone",
+  "start_url": "./index.html",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "description": "英会話トレーニングアプリ",
+  "lang": "ja",
+  "orientation": "portrait"
+}
