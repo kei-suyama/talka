@@ -16,10 +16,10 @@
   ];
 
   var DEFAULT_DESC =
-    '白(プラチナ)のボブヘアで、毛先とインナーカラーがミントグリーン。' +
-    'アクアブルーの少し気だるげな目、左目の下に小さな泣きぼくろ。' +
-    '黒いチョーカーと小さなシルバーのピアス。白いファー襟の付いた黒のオーバーサイズジャケット。' +
-    '色白でクールだけど優しい雰囲気の女の子。';
+    'ツヤのある明るいミルクティーベージュのセミロングヘアで、ゆるふわに巻いた髪。' +
+    '大きくてぱっちりした琥珀色がかったブラウンの瞳、長いまつ毛、透明感のある白い肌。' +
+    '自然なピンクのチークと血色のいい唇、小さめの鼻。' +
+    '清楚で親しみやすい、誰からも好かれる正統派の美少女。白いブラウスに淡いベージュのカーディガン。優しい微笑み。';
 
   function esc(s) {
     if (window.App && typeof App.escapeHtml === 'function') return App.escapeHtml(s);
@@ -75,10 +75,13 @@
   }
 
   function basePrompt(desc) {
-    return 'Create a bust-up portrait illustration of one original anime character, facing the viewer, centered, ' +
-      'head and shoulders visible, looking at the camera with a calm neutral expression (mouth closed). ' +
+    return 'Create a bust-up portrait illustration of one original anime girl character, facing the viewer, centered, ' +
+      'head and shoulders visible, looking at the camera with a calm gentle expression (mouth closed). ' +
       'Character appearance: ' + desc + ' ' +
-      'Modern Japanese anime illustration style: clean lineart, soft cel shading, beautiful highly detailed eyes. ' +
+      'She must be exceptionally beautiful and charming — an idol-level pretty face with perfectly balanced, appealing proportions ' +
+      'that would be widely loved (大衆ウケする美少女). ' +
+      'Top-quality modern Japanese anime illustration: clean lineart, soft luminous cel shading, large sparkling highly detailed eyes, ' +
+      'glossy hair with beautiful highlights. ' +
       'Plain solid very dark navy background (hex #131722). Square composition. No text, no watermark, no signature.';
   }
 
