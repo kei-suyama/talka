@@ -108,6 +108,7 @@
           '<div class="row">' +
             '<button class="btn btn-primary" id="set-save" type="button">保存</button>' +
             '<button class="btn" id="set-test" type="button">接続テスト</button>' +
+            '<button class="btn" id="set-diag" type="button">診断</button>' +
           '</div>' +
         '</div>' +
 
@@ -133,7 +134,7 @@
           '</div>' +
         '</div>' +
 
-        '<p class="muted" style="text-align:center">TALKA v4</p>' +
+        '<p class="muted" style="text-align:center">TALKA v5</p>' +
         '<div class="spacer"></div>' +
       '</div>';
 
@@ -169,6 +170,60 @@
         } catch (e) {
           toast(e && e.message ? e.message : '接続に失敗しました');
         }
+      });
+    });
+
+    $('set-diag').addEventListener('click', function () {
+      var btn = this;
+      busy(btn, async function () {
+        var s = saveSettings(true);
+        var out = [];
+        var ta = $('set-data');
+        function line(t) { out.push(t); if (ta) ta.value = out.join('\n'); }
+        function ms(t0) { return ' (' + (Date.now() - t0) + 'ms)'; }
+        line('--- TALKA 診断 v5 ---');
+        line('ブラウザ: ' + String(navigator.userAgent).slice(0, 90));
+        line('オンライン: ' + (navigator.onLine ? 'はい' : 'いいえ'));
+        if (!s.apiKey) { line('NG: APIキーが未設定です'); return; }
+        line('プロバイダー: ' + s.provider + (s.model ? ' / モデル指定: ' + s.model : ' / モデル: 自動'));
+        if (s.provider === 'gemini') {
+          var t0 = Date.now();
+          try {
+            var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            var timer = ctrl && setTimeout(function () { ctrl.abort(); }, 15000);
+            var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=50',
+              ctrl ? { headers: { 'x-goog-api-key': s.apiKey }, signal: ctrl.signal }
+                   : { headers: { 'x-goog-api-key': s.apiKey } });
+            if (timer) clearTimeout(timer);
+            line('1) モデル一覧取得: HTTP ' + res.status + ms(t0));
+            var j = await res.json().catch(function () { return {}; });
+            if (res.ok) {
+              var names = (j.models || []).map(function (m) {
+                return String(m.name || '').replace(/^models\//, '');
+              }).filter(function (n) { return /^gemini-/.test(n); });
+              line('   利用可能モデル: ' + (names.slice(0, 10).join(', ') || 'なし'));
+            } else {
+              var em = j && j.error && j.error.message;
+              line('   エラー: ' + String(em || '').slice(0, 120));
+            }
+          } catch (e) {
+            line('1) モデル一覧取得: 失敗' + ms(t0) + ' ' +
+              (e && e.name === 'AbortError' ? '15秒でタイムアウト(ネットワークが応答しません)' : (e && e.message) || ''));
+          }
+        }
+        var t1 = Date.now();
+        try {
+          var outp = await window.LLM.chat(
+            [{ role: 'user', content: 'Say the single word: OK' }],
+            { system: 'Reply with one short word.', maxTokens: 64 }
+          );
+          line('2) 生成テスト: 成功 "' + String(outp).trim().slice(0, 20) + '"' + ms(t1));
+          line('--- 正常です。このまま会話できます ---');
+        } catch (e) {
+          line('2) 生成テスト: 失敗' + ms(t1));
+          line('   ' + ((e && e.message) || 'エラー'));
+        }
+        line('※この内容をコピーしてClaudeに貼り付けてください');
       });
     });
 
