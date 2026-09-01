@@ -134,7 +134,7 @@
           '</div>' +
         '</div>' +
 
-        '<p class="muted" style="text-align:center">TALKA v13</p>' +
+        '<p class="muted" style="text-align:center">TALKA v14</p>' +
         '<div class="spacer"></div>' +
       '</div>';
 

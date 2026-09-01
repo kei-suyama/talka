@@ -152,8 +152,16 @@
     '</svg>';
 
   var host = null;
-  var imgSet = null; // AI-generated expression set from CharMaker, if any
+  var imgSet = null; // expression image set (user-generated via CharMaker, or the bundled default)
   var IMG_FALLBACK = { curious: 'surprised', excited: 'laugh', laugh: 'happy' };
+
+  /* default Emma: AI-illustrated expression set shipped with the app */
+  var BUILTIN = (function () {
+    var names = ['neutral', 'happy', 'laugh', 'excited', 'surprised', 'thinking', 'sad', 'curious'];
+    var out = {};
+    names.forEach(function (n) { out[n] = 'assets/emma/' + n + '.jpg'; });
+    return out;
+  })();
 
   function q(sel) { return host ? host.querySelector(sel) : null; }
   function qa(sel) { return host ? host.querySelectorAll(sel) : []; }
@@ -161,17 +169,19 @@
   function mount(container) {
     if (!container) return;
     host = container;
-    imgSet = null;
+    imgSet = BUILTIN;
     try {
       var data = window.Store && Store.get('charImages', null);
       if (data && data.imgs && data.imgs.neutral) imgSet = data.imgs;
     } catch (e) {}
-    if (imgSet) {
-      container.innerHTML = '<img class="emma-img" alt="Emma">';
+    container.innerHTML = '<img class="emma-img" alt="Emma">';
+    var im = container.querySelector('.emma-img');
+    /* bundled files missing / offline -> fall back to the built-in SVG face */
+    im.onerror = function () {
+      imgSet = null;
+      container.innerHTML = SVG;
       setEmotion('neutral');
-      return;
-    }
-    container.innerHTML = SVG;
+    };
     setEmotion('neutral');
   }
 
