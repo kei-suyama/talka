@@ -258,6 +258,8 @@
         '</div>' +
         '<button class="btn btn-primary" id="talk-begin" type="button">会話をはじめる</button>' +
         '<div class="spacer"></div>' +
+        '<button class="btn" id="talk-charmake" type="button" style="width:100%">キャラメイク(Emmaの見た目をAIで生成)</button>' +
+        '<div class="spacer"></div>' +
       '</div>';
 
     if (!state.missions.length) state.missions = pickMissions(3);
@@ -274,6 +276,11 @@
     v.querySelector('#talk-begin').addEventListener('click', function () {
       try { if (window.Speech && Speech.warmup) Speech.warmup(); } catch (e) {}
       start();
+    });
+    var cm = v.querySelector('#talk-charmake');
+    if (cm) cm.addEventListener('click', function () {
+      if (window.CharMaker && CharMaker.open) CharMaker.open();
+      else toast('キャラメイク機能を読み込めませんでした。ページを再読み込みしてください。');
     });
   }
 

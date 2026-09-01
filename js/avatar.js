@@ -152,19 +152,45 @@
     '</svg>';
 
   var host = null;
+  var imgSet = null; // AI-generated expression set from CharMaker, if any
+  var IMG_FALLBACK = { curious: 'surprised', excited: 'laugh', laugh: 'happy' };
 
   function q(sel) { return host ? host.querySelector(sel) : null; }
   function qa(sel) { return host ? host.querySelectorAll(sel) : []; }
 
   function mount(container) {
     if (!container) return;
-    container.innerHTML = SVG;
     host = container;
+    imgSet = null;
+    try {
+      var data = window.Store && Store.get('charImages', null);
+      if (data && data.imgs && data.imgs.neutral) imgSet = data.imgs;
+    } catch (e) {}
+    if (imgSet) {
+      container.innerHTML = '<img class="emma-img" alt="Emma">';
+      setEmotion('neutral');
+      return;
+    }
+    container.innerHTML = SVG;
     setEmotion('neutral');
+  }
+
+  function imgFor(name) {
+    if (!imgSet) return null;
+    var k = name;
+    var hops = 0;
+    while (k && !imgSet[k] && hops < 4) { k = IMG_FALLBACK[k]; hops++; }
+    return imgSet[k] || imgSet.neutral;
   }
 
   function setEmotion(name) {
     if (!host) return;
+    if (imgSet) {
+      var im = q('.emma-img');
+      var src = imgFor(name);
+      if (im && src && im.getAttribute('src') !== src) im.setAttribute('src', src);
+      return;
+    }
     var e = EMOTIONS[name] || EMOTIONS.neutral;
     var open = q('.emma-eyes-open');
     var closed = q('.emma-eyes-closed');
@@ -200,6 +226,11 @@
 
   function setTalking(on) {
     if (!host) return;
+    if (imgSet) {
+      var im = q('.emma-img');
+      if (im) im.classList.toggle('talking', !!on);
+      return;
+    }
     var svg = q('.emma-svg');
     if (svg) svg.classList.toggle('talking', !!on);
   }

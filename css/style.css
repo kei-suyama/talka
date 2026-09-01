@@ -485,6 +485,9 @@ body.kb-open .tabbar{transform:translateY(110%);pointer-events:none;}
 .emma-svg.talking .emma-mouth-talk{opacity:1;animation:emma-talk 0.28s infinite alternate ease-in-out;transform-origin:60px 82px;}
 @keyframes emma-talk{from{transform:scaleY(0.35);}to{transform:scaleY(1.1);}}
 .avatar-box.talking{box-shadow:0 0 18px rgba(70,195,255,0.5);}
+.emma-img{display:block;width:100%;height:100%;object-fit:cover;transition:transform 0.2s;}
+.emma-img.talking{animation:emma-img-bob 0.4s infinite alternate ease-in-out;}
+@keyframes emma-img-bob{from{transform:scale(1);}to{transform:scale(1.045);}}
 
 /* ---------- talk view ---------- */
 .talk-chat{
