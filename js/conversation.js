@@ -511,10 +511,20 @@
     openGreeting();
   }
 
+  /* A sync throw here (e.g. llm.js failed to load, leaving window.LLM
+     undefined) used to leave the whole chat UI disabled forever. */
+  function safeChat(messages, opts) {
+    if (!window.LLM || typeof window.LLM.chat !== 'function') {
+      return Promise.reject(new Error('アプリの読み込みが不完全です。ページを再読み込みしてください。'));
+    }
+    try { return Promise.resolve(window.LLM.chat(messages, opts)); }
+    catch (e) { return Promise.reject(e); }
+  }
+
   function openGreeting() {
     var t = appendTyping();
     setBusy(true);
-    window.LLM.chat(
+    safeChat(
       [{ role: 'user', content: '(The learner just opened the app and is ready to talk. Greet them warmly in one or two sentences and ask an opening question.)' }],
       { system: systemPrompt(), maxTokens: 200 }
     ).then(function (reply) {
@@ -552,7 +562,7 @@
   function replyToUser() {
     var t = appendTyping();
     setBusy(true);
-    window.LLM.chat(chatHistory(), { system: systemPrompt(), maxTokens: 200 })
+    safeChat(chatHistory(), { system: systemPrompt(), maxTokens: 200 })
       .then(function (reply) {
         if (t && t.parentNode) t.parentNode.removeChild(t);
         var text = String(reply || '').trim();
@@ -603,7 +613,7 @@
       'Return ONLY this JSON object, no other text:\n' +
       '{"meaning_ja": "自然で簡潔な日本語の意味(20文字程度)", "example_en": "a short natural English example sentence using it"}';
 
-    window.LLM.chat([{ role: 'user', content: prompt }], {
+    safeChat([{ role: 'user', content: prompt }], {
       system: 'You are a concise English-Japanese dictionary for Japanese learners. Always answer with a single valid JSON object and nothing else. meaning_ja must be Japanese; example_en must be English.',
       json: true,
       maxTokens: 300

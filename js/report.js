@@ -68,10 +68,12 @@
   }
 
   function generate(history, missions) {
-    return window.LLM.chat(
-      [{ role: 'user', content: buildPrompt(history, missions) }],
-      { system: SYSTEM, json: true, maxTokens: 1200 }
-    ).then(normalize);
+    return Promise.resolve().then(function () {
+      return window.LLM.chat(
+        [{ role: 'user', content: buildPrompt(history, missions) }],
+        { system: SYSTEM, json: true, maxTokens: 1200 }
+      );
+    }).then(normalize);
   }
 
   function usedSet(report) {

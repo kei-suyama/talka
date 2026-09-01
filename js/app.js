@@ -103,6 +103,22 @@
     setTimeout(syncViewport, 300);
   }
 
+  /* surface silent failures: on a phone there is no devtools console, so a
+     script error would otherwise just look like a dead, disabled UI */
+  let errToasts = 0;
+  function reportError(msg){
+    if(errToasts >= 3) return;
+    errToasts++;
+    try { App.toast('エラー: ' + String(msg).slice(0, 120)); } catch(e){ /* ignore */ }
+  }
+  window.addEventListener('error', ev => {
+    reportError(ev && ev.message ? ev.message : 'スクリプトを読み込めませんでした');
+  });
+  window.addEventListener('unhandledrejection', ev => {
+    const r = ev && ev.reason;
+    reportError(r && r.message ? r.message : r);
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
     initViewport();
     initTabs();
