@@ -152,7 +152,7 @@
         : 'リクエストが不正です。モデル名を確認してください。';
     }
     else if (status === 401 || status === 403) hint = 'APIキーを確認してください。';
-    else if (status === 404) hint = 'モデルが見つかりません。モデル名を確認してください。';
+    else if (status === 404) hint = 'モデルが見つかりません。設定のモデル名を空欄にすると自動選択されます。';
     else if (status === 429) hint = '無料枠の上限に達した可能性があります。少し待って再試行してください。';
     else if (status === 500 || status === 502 || status === 503 || status === 529)
       hint = 'AIサーバーが混雑しています。少し待って再試行してください。';
@@ -204,6 +204,64 @@
   }
 
   /* ---------- providers ---------- */
+
+  /* Google retires Gemini model names often (all 1.x and 2.0 already return
+     404), so a hard-coded default eventually breaks. When no model is set,
+     discover what this API key can actually use and cache the best pick. */
+  var AUTO_MODEL_KEY = 'geminiAutoModel';
+
+  function scoreGeminiModel(n) {
+    var s = 0;
+    var v = n.match(/gemini-(\d+(?:\.\d+)?)/);
+    if (v) s += parseFloat(v[1]) * 100;
+    if (/flash/.test(n)) s += 50;
+    if (/pro/.test(n)) s += 20;
+    if (/lite/.test(n)) s -= 30;
+    if (/preview|exp/.test(n)) s -= 15;
+    if (/latest/.test(n)) s += 5;
+    return s;
+  }
+
+  async function discoverGeminiModel(st) {
+    var data = await request(GEMINI_URL + '?pageSize=1000', {
+      method: 'GET',
+      headers: { 'x-goog-api-key': st.apiKey }
+    });
+    var names = (data.models || []).filter(function (m) {
+      var methods = m.supportedGenerationMethods || m.supportedActions || [];
+      return !methods.length || methods.indexOf('generateContent') >= 0;
+    }).map(function (m) {
+      return String(m.name || '').replace(/^models\//, '');
+    }).filter(function (n) {
+      return /^gemini-/.test(n) &&
+        !/tts|embed|image|imagen|audio|live|native|veo|thinking|robotics|computer/i.test(n);
+    });
+    if (!names.length) return null;
+    names.sort(function (a, b) { return scoreGeminiModel(b) - scoreGeminiModel(a); });
+    return names[0];
+  }
+
+  async function geminiChat(st, msgs, system, json, maxTokens) {
+    var userPinned = !!st.model;
+    if (!userPinned) {
+      var auto = (window.Store && Store.get(AUTO_MODEL_KEY, '')) || '';
+      if (auto) st = Object.assign({}, st, { model: auto });
+    }
+    try {
+      return await callGemini(st, msgs, system, json, maxTokens);
+    } catch (e) {
+      /* stale/unavailable model -> ask the API what exists and retry once */
+      if (!userPinned && /APIエラー 404/.test(e.message || '')) {
+        var found = null;
+        try { found = await discoverGeminiModel(st); } catch (e2) { /* keep original error */ }
+        if (found && found !== modelFor(st)) {
+          if (window.Store) Store.set(AUTO_MODEL_KEY, found);
+          return await callGemini(Object.assign({}, st, { model: found }), msgs, system, json, maxTokens);
+        }
+      }
+      throw e;
+    }
+  }
 
   async function callGemini(st, msgs, system, json, maxTokens) {
     var model = modelFor(st);
@@ -297,7 +355,7 @@
 
     var raw = st.provider === 'claude'
       ? await callClaude(st, msgs, system, json, maxTokens)
-      : await callGemini(st, msgs, system, json, maxTokens);
+      : await geminiChat(st, msgs, system, json, maxTokens);
 
     if (!json) return raw;
 
@@ -312,7 +370,7 @@
       ]);
       var raw2 = st.provider === 'claude'
         ? await callClaude(st, normalize(retryMsgs), system, true, maxTokens)
-        : await callGemini(st, normalize(retryMsgs), system, true, maxTokens);
+        : await geminiChat(st, normalize(retryMsgs), system, true, maxTokens);
       var parsed2 = parseLenient(raw2);
       if (parsed2) return parsed2;
     } catch (e) { /* fall through */ }
