@@ -298,6 +298,14 @@
       var a = (window.Speech && Speech.available) ? Speech.available() : {};
       sttOK = !!a.stt; ttsOK = !!a.tts;
     } catch (e) {}
+    /* iOS only exposes speech recognition to Safari itself. Chrome/Firefox/Edge
+       on iPhone either lack the API or fail at runtime with service-not-allowed,
+       so treat them as text-only and say so up front. */
+    var ua = navigator.userAgent || '';
+    var isIOS = /iP(hone|ad|od)/.test(ua) ||
+      (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
+    var iosNonSafari = isIOS && /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|Brave|DuckDuckGo/.test(ua);
+    if (iosNonSafari) sttOK = false;
 
     v.innerHTML =
       '<div class="talk-chat fade-in">' +
@@ -330,8 +338,28 @@
 
     renderChips();
 
+    if (!sttOK) {
+      el.mic.style.opacity = '0.4';
+      el.mic.style.filter = 'grayscale(0.6)';
+      var micRow = v.querySelector('.talk-mic-row');
+      if (micRow) {
+        var note = document.createElement('div');
+        note.className = 'muted';
+        note.style.cssText = 'text-align:center;width:100%';
+        note.textContent = iosNonSafari
+          ? 'このブラウザでは音声入力が使えません。iPhoneはSafariで開いてください(テキスト入力は使えます)。'
+          : 'この端末では音声入力が使えません。テキストで入力してください。';
+        micRow.parentNode.insertBefore(note, micRow.nextSibling);
+      }
+    }
+
     el.mic.addEventListener('click', function () {
-      if (!sttOK) { toast('この端末では音声認識が使えません。テキストで入力してください。'); return; }
+      if (!sttOK) {
+        toast(iosNonSafari
+          ? 'iPhoneではSafariで開くと音声入力が使えます'
+          : 'この端末では音声認識が使えません。テキストで入力してください。');
+        return;
+      }
       if (state.listening) stopListening(); else startListening();
     });
     el.send.addEventListener('click', function () { submitText(); });
