@@ -1,32 +1,33 @@
-/* TALKA - Emma avatar v3 (Japanese anime style, inline SVG). Attaches window.Avatar */
+/* TALKA - Emma avatar v4 (cool street style: white bob + teal inner color,
+   fur-trim jacket, choker). Inline SVG. Attaches window.Avatar */
 (function () {
   'use strict';
 
   var EMOTIONS = {
-    neutral:   { eyes: 'open',   browL: 0,  browY: 0,  mouth: 'M56 77.5 Q60 79.5 64 77.5',                          blush: 0.4,  tilt: 0,  sparkle: 0, heart: 0 },
-    happy:     { eyes: 'open',   browL: -3, browY: -1, mouth: 'M55 77 Q60 81.5 65 77',                              blush: 0.65, tilt: 0,  sparkle: 0, heart: 0 },
-    laugh:     { eyes: 'closed', browL: -5, browY: -2, mouth: 'M54 76 Q60 84.5 66 76 Q60 79 54 76 Z',               blush: 0.7,  tilt: 0,  sparkle: 0, heart: 0 },
-    excited:   { eyes: 'wide',   browL: -5, browY: -3, mouth: 'M54 76 Q60 84.5 66 76 Q60 79 54 76 Z',               blush: 0.75, tilt: 0,  sparkle: 1, heart: 1 },
-    surprised: { eyes: 'wide',   browL: 0,  browY: -5, mouth: 'M57.2 77 Q60 75.2 62.8 77 Q62.8 81.5 60 81.5 Q57.2 81.5 57.2 77 Z', blush: 0.45, tilt: 0, sparkle: 0, heart: 0 },
-    thinking:  { eyes: 'up',     browL: 4,  browY: -2, mouth: 'M56 78.5 Q60 77.5 64 79',                            blush: 0.35, tilt: -3, sparkle: 0, heart: 0 },
-    sad:       { eyes: 'open',   browL: 8,  browY: -1, mouth: 'M55.5 80 Q60 76.5 64.5 80',                          blush: 0.35, tilt: 2,  sparkle: 0, heart: 0 },
-    curious:   { eyes: 'wide',   browL: -2, browY: -3, mouth: 'M56 77 Q60 80.5 64 77',                              blush: 0.5,  tilt: 5,  sparkle: 0, heart: 0 }
+    neutral:   { eyes: 'open',   browL: 0,  browY: 0,  mouth: 'M56.5 78 Q60 79 63.5 78',                            blush: 0.3,  tilt: 0,  sparkle: 0, heart: 0 },
+    happy:     { eyes: 'open',   browL: -3, browY: -1, mouth: 'M55.5 77.5 Q60 81 64.5 77.5',                        blush: 0.55, tilt: 0,  sparkle: 0, heart: 0 },
+    laugh:     { eyes: 'closed', browL: -5, browY: -2, mouth: 'M54.5 76.5 Q60 84 65.5 76.5 Q60 79 54.5 76.5 Z',     blush: 0.6,  tilt: 0,  sparkle: 0, heart: 0 },
+    excited:   { eyes: 'wide',   browL: -5, browY: -3, mouth: 'M54.5 76.5 Q60 84 65.5 76.5 Q60 79 54.5 76.5 Z',     blush: 0.65, tilt: 0,  sparkle: 1, heart: 1 },
+    surprised: { eyes: 'wide',   browL: 0,  browY: -5, mouth: 'M57.4 77 Q60 75.4 62.6 77 Q62.6 81 60 81 Q57.4 81 57.4 77 Z', blush: 0.4, tilt: 0, sparkle: 0, heart: 0 },
+    thinking:  { eyes: 'up',     browL: 4,  browY: -2, mouth: 'M56.5 78.5 Q60 77.8 63.5 79',                        blush: 0.25, tilt: -3, sparkle: 0, heart: 0 },
+    sad:       { eyes: 'open',   browL: 8,  browY: -1, mouth: 'M56 79.8 Q60 77 64 79.8',                            blush: 0.3,  tilt: 2,  sparkle: 0, heart: 0 },
+    curious:   { eyes: 'wide',   browL: -2, browY: -3, mouth: 'M56.5 77.5 Q60 80 63.5 77.5',                        blush: 0.4,  tilt: 5,  sparkle: 0, heart: 0 }
   };
 
   var SVG =
     '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="emma-svg" aria-label="Emma">' +
       '<defs>' +
-        '<linearGradient id="em-hair" x1="0" y1="0" x2="0.3" y2="1">' +
-          '<stop offset="0" stop-color="#a08dff"/><stop offset="0.6" stop-color="#7f8dff"/><stop offset="1" stop-color="#63c8ff"/>' +
+        '<linearGradient id="em-hairW" x1="0" y1="0" x2="0.2" y2="1">' +
+          '<stop offset="0" stop-color="#f7f6fa"/><stop offset="0.7" stop-color="#e9e8f1"/><stop offset="1" stop-color="#d4d4e4"/>' +
         '</linearGradient>' +
-        '<linearGradient id="em-hair-dk" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#7f6ee0"/><stop offset="1" stop-color="#4fa8e8"/>' +
+        '<linearGradient id="em-hairIn" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#8ce8dc"/><stop offset="1" stop-color="#4cc4c0"/>' +
         '</linearGradient>' +
         '<linearGradient id="em-iris" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#6a56e8"/><stop offset="0.55" stop-color="#4f8fff"/><stop offset="1" stop-color="#54e8ff"/>' +
+          '<stop offset="0" stop-color="#2c93b8"/><stop offset="0.55" stop-color="#43c2d6"/><stop offset="1" stop-color="#a2f2e6"/>' +
         '</linearGradient>' +
         '<radialGradient id="em-bg" cx="0.5" cy="0.3" r="0.85">' +
-          '<stop offset="0" stop-color="rgba(160,141,255,0.38)"/><stop offset="1" stop-color="rgba(84,232,255,0.10)"/>' +
+          '<stop offset="0" stop-color="rgba(210,216,232,0.30)"/><stop offset="1" stop-color="rgba(120,214,206,0.10)"/>' +
         '</radialGradient>' +
         '<filter id="em-blur" x="-60%" y="-60%" width="220%" height="220%">' +
           '<feGaussianBlur stdDeviation="1.8"/>' +
@@ -37,114 +38,113 @@
         '<circle cx="60" cy="60" r="57" fill="url(#em-bg)"/>' +
         '<g class="emma-tilt">' +
 
-        /* ---- back hair (long, flowing) ---- */
-        '<path d="M12 120 Q4 66 20 38 Q32 12 60 9 Q88 12 100 38 Q116 66 108 120 L96 120 Q102 88 96 64 Q95 92 88 120 L80 120 Q84 84 80 62 Q76 94 72 120 L48 120 Q44 94 40 62 Q36 84 40 120 L32 120 Q25 92 24 64 Q18 88 24 120 Z" fill="url(#em-hair)"/>' +
-        '<path d="M24 64 Q28 96 32 120 L40 120 Q36 84 40 62 Z" fill="url(#em-hair-dk)" opacity="0.5"/>' +
-        '<path d="M80 62 Q84 84 80 120 L88 120 Q92 96 96 64 Z" fill="url(#em-hair-dk)" opacity="0.5"/>' +
+        /* ---- back hair: white bob, inner teal layer showing at the ends ---- */
+        '<path d="M22 76 Q14 34 38 18 Q50 9 60 9 Q70 9 82 18 Q106 34 98 76 Q96 88 90 93 L30 93 Q24 88 22 76 Z" fill="url(#em-hairW)"/>' +
+        /* teal inner color peeking out under the bob */
+        '<path d="M28 74 Q30 88 36 94 Q42 90 40 78 Q44 90 50 95 Q54 90 52 80 Q56 92 60 95 Q64 92 68 80 Q66 90 70 95 Q76 90 80 78 Q78 90 84 94 Q90 88 92 74 L86 70 L34 70 Z" fill="url(#em-hairIn)"/>' +
 
-        /* ---- body: sailor uniform ---- */
-        '<path d="M26 120 Q28 101 43 95 L60 90 L77 95 Q92 101 94 120 Z" fill="#333a63"/>' +
-        '<path d="M43 95 L60 106 L77 95 L78 101 L60 115 L42 101 Z" fill="#272d4f"/>' +
-        '<path d="M45 97 L60 108 L75 97" stroke="#e8ecf4" stroke-width="1.3" fill="none"/>' +
-        '<path d="M47 99.5 L60 111 L73 99.5" stroke="#e8ecf4" stroke-width="1.3" fill="none"/>' +
-        /* ribbon */
-        '<path d="M60 106 L52 103 L53 111 Z" fill="#ff7d95"/>' +
-        '<path d="M60 106 L68 103 L67 111 Z" fill="#ff7d95"/>' +
-        '<circle cx="60" cy="106.5" r="2" fill="#ff5d7a"/>' +
+        /* ---- body: black jacket with white fur trim ---- */
+        '<path d="M22 120 Q24 102 40 96 L60 91 L80 96 Q96 102 98 120 Z" fill="#191b24"/>' +
+        '<path d="M40 108 L60 100 L80 108" stroke="#2c2f3d" stroke-width="1.4" fill="none"/>' +
+        '<path d="M60 101 L60 120" stroke="#31344a" stroke-width="1.6"/>' +
+        /* fur collar: fluffy bumps across the shoulders */
+        '<path d="M24 112 Q23 104 29 103 Q27 96 34 96 Q33 89 41 91 Q41 84 48 88 Q49 82 55 86 Q58 81 62 86 Q67 82 69 88 Q75 84 76 91 Q83 89 83 96 Q90 96 88 103 Q94 104 93 112 Q88 118 78 114 Q73 119 66 115 Q61 120 54 115 Q47 119 42 114 Q32 118 24 112 Z" fill="#f1f2f7"/>' +
+        '<path d="M30 106 Q36 100 44 102 M50 98 Q56 94 64 97 M70 100 Q78 99 84 105" stroke="#d5d7e4" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
 
-        /* ---- neck ---- */
-        '<path d="M54 80 L54 94 Q60 99 66 94 L66 80 Z" fill="#ffdcc8"/>' +
-        '<path d="M54 82 Q60 88 66 82 L66 80 L54 80 Z" fill="rgba(190,120,95,0.35)"/>' +
+        /* ---- neck + choker ---- */
+        '<path d="M54 78 L54 92 Q60 97 66 92 L66 78 Z" fill="#ffeadb"/>' +
+        '<path d="M54 80 Q60 86 66 80 L66 78 L54 78 Z" fill="rgba(180,120,100,0.30)"/>' +
+        '<path d="M53.5 86.5 Q60 90 66.5 86.5 L66.5 90 Q60 93.5 53.5 90 Z" fill="#20222d"/>' +
+        '<rect x="58.6" y="87.6" width="2.8" height="2.8" rx="0.6" fill="#8f94a8"/>' +
 
         /* ---- face ---- */
-        '<path d="M33 54 Q33 30 60 28 Q87 30 87 54 Q87 66 82 73 Q74 83 66 86 Q60 88 54 86 Q46 83 38 73 Q33 66 33 54 Z" fill="#ffe6d5"/>' +
-        /* bang shadow on forehead */
-        '<path d="M36 50 Q60 58 84 50 L84 42 Q60 50 36 42 Z" fill="rgba(170,120,95,0.14)" filter="url(#em-blur)"/>' +
+        '<path d="M33 54 Q33 30 60 28 Q87 30 87 54 Q87 66 82 73 Q74 83 66 86 Q60 88 54 86 Q46 83 38 73 Q33 66 33 54 Z" fill="#fff0e4"/>' +
+        '<path d="M36 50 Q60 58 84 50 L84 42 Q60 50 36 42 Z" fill="rgba(150,130,120,0.12)" filter="url(#em-blur)"/>' +
 
-        /* ---- blush: soft + anime stroke lines ---- */
+        /* ---- ear + piercings (viewer left) ---- */
+        '<path d="M33 60 Q29.5 58 30 63 Q30.5 68 34 69 Z" fill="#ffe6d6"/>' +
+        '<circle cx="31.8" cy="66.5" r="1.1" fill="none" stroke="#aeb4c8" stroke-width="0.8"/>' +
+        '<circle cx="33.4" cy="68.8" r="0.9" fill="none" stroke="#aeb4c8" stroke-width="0.8"/>' +
+
+        /* ---- blush (soft, subtle) ---- */
         '<g class="emma-blush-g">' +
-          '<ellipse class="emma-blush" cx="41.5" cy="70" rx="6" ry="3.2" fill="#ff9fb2" opacity="0.4" filter="url(#em-blur)"/>' +
-          '<ellipse class="emma-blush" cx="78.5" cy="70" rx="6" ry="3.2" fill="#ff9fb2" opacity="0.4" filter="url(#em-blur)"/>' +
-          '<g class="emma-blush" stroke="#f490a5" stroke-width="0.9" opacity="0.4" stroke-linecap="round">' +
-            '<path d="M38.5 68.5 L41.5 72.5"/><path d="M41.5 68 L44.5 72"/>' +
-            '<path d="M75.5 68 L78.5 72"/><path d="M78.5 68.5 L81.5 72.5"/>' +
-          '</g>' +
+          '<ellipse class="emma-blush" cx="42" cy="70.5" rx="5.5" ry="2.8" fill="#f5aeb8" opacity="0.3" filter="url(#em-blur)"/>' +
+          '<ellipse class="emma-blush" cx="78" cy="70.5" rx="5.5" ry="2.8" fill="#f5aeb8" opacity="0.3" filter="url(#em-blur)"/>' +
         '</g>' +
 
-        /* ---- open eyes ---- */
+        /* ---- open eyes (cool, slightly droopy, aqua iris) ---- */
         '<g class="emma-eyes-open">' +
           '<g class="emma-eye-blink">' +
-            /* left eye */
             '<g class="emma-eye-g" data-cx="46.5">' +
-              '<path d="M40 55 Q40 68 42.5 68.5 Q46.5 70 51 68.5 Q53.5 67.5 53.5 55 Z" fill="#fff"/>' +
-              '<ellipse class="emma-iris" cx="46.8" cy="61" rx="5.7" ry="7.8" fill="url(#em-iris)"/>' +
-              '<path class="emma-iris" d="M41.3 58.5 Q46.8 52.6 52.3 58.5 Q46.8 60.8 41.3 58.5 Z" fill="#33296b" opacity="0.55"/>' +
-              '<ellipse class="emma-pupil" cx="46.8" cy="61.5" rx="2.3" ry="3.6" fill="#181c33"/>' +
-              '<ellipse class="emma-iris" cx="46.8" cy="66.6" rx="3.4" ry="1.5" fill="#9ff2ff" opacity="0.65"/>' +
-              '<circle class="emma-hl-big" cx="44" cy="56.8" r="2.5" fill="#fff"/>' +
-              '<circle class="emma-hl-sm" cx="50" cy="64.5" r="1.15" fill="#fff" opacity="0.9"/>' +
-              /* upper lash band */
-              '<path d="M38.5 57 Q39.5 50.5 46.5 49.3 Q53 50 54.8 55.5 L53.5 56.5 Q52 52.3 46.6 52 Q41.5 52.3 40.2 57.5 Z" fill="#262a45"/>' +
-              '<path d="M39.6 53.8 L36.6 51.6 Q38.6 51.2 40.6 52.4 Z" fill="#262a45"/>' +
-              /* lower lid */
-              '<path d="M42 69 Q46.5 70.8 51 69" stroke="rgba(80,70,110,0.55)" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+              '<path d="M40 55.5 Q40 66.5 42.5 67.5 Q46.5 69 51 67.5 Q53.5 66.5 53.5 55.5 Z" fill="#fff"/>' +
+              '<ellipse class="emma-iris" cx="46.8" cy="60.8" rx="5.5" ry="7" fill="url(#em-iris)"/>' +
+              '<path class="emma-iris" d="M41.5 58 Q46.8 53 52.1 58 Q46.8 60 41.5 58 Z" fill="#1e6b8a" opacity="0.6"/>' +
+              '<ellipse class="emma-pupil" cx="46.8" cy="61" rx="2.2" ry="3.3" fill="#132433"/>' +
+              '<ellipse class="emma-iris" cx="46.8" cy="65.8" rx="3.2" ry="1.4" fill="#c8fbf2" opacity="0.7"/>' +
+              '<circle class="emma-hl-big" cx="44.2" cy="56.8" r="2.2" fill="#fff"/>' +
+              '<circle class="emma-hl-sm" cx="49.8" cy="64" r="1" fill="#fff" opacity="0.9"/>' +
+              /* flatter, cooler upper lash */
+              '<path d="M38.8 56.5 Q40.5 51.8 46.5 51.2 Q52.5 51.6 54.5 55.5 L53.3 56.5 Q51.8 53.8 46.6 53.6 Q41.8 53.8 40.3 57 Z" fill="#3f4254"/>' +
+              '<path d="M39.8 54.5 L37 53 Q38.8 52.6 40.6 53.6 Z" fill="#3f4254"/>' +
+              '<path d="M42 68 Q46.5 69.6 51 68" stroke="rgba(90,86,120,0.45)" stroke-width="1" fill="none" stroke-linecap="round"/>' +
             '</g>' +
-            /* right eye */
             '<g class="emma-eye-g" data-cx="73.5">' +
-              '<path d="M66.5 55 Q66.5 67.5 69 68.5 Q73.5 70 78 68.5 Q80 68 80 55 Z" fill="#fff"/>' +
-              '<ellipse class="emma-iris" cx="73.2" cy="61" rx="5.7" ry="7.8" fill="url(#em-iris)"/>' +
-              '<path class="emma-iris" d="M67.7 58.5 Q73.2 52.6 78.7 58.5 Q73.2 60.8 67.7 58.5 Z" fill="#33296b" opacity="0.55"/>' +
-              '<ellipse class="emma-pupil" cx="73.2" cy="61.5" rx="2.3" ry="3.6" fill="#181c33"/>' +
-              '<ellipse class="emma-iris" cx="73.2" cy="66.6" rx="3.4" ry="1.5" fill="#9ff2ff" opacity="0.65"/>' +
-              '<circle class="emma-hl-big" cx="70.4" cy="56.8" r="2.5" fill="#fff"/>' +
-              '<circle class="emma-hl-sm" cx="76.4" cy="64.5" r="1.15" fill="#fff" opacity="0.9"/>' +
-              '<path d="M81.5 57 Q80.5 50.5 73.5 49.3 Q67 50 65.2 55.5 L66.5 56.5 Q68 52.3 73.4 52 Q78.5 52.3 79.8 57.5 Z" fill="#262a45"/>' +
-              '<path d="M80.4 53.8 L83.4 51.6 Q81.4 51.2 79.4 52.4 Z" fill="#262a45"/>' +
-              '<path d="M69 69 Q73.5 70.8 78 69" stroke="rgba(80,70,110,0.55)" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+              '<path d="M66.5 55.5 Q66.5 66.5 69 67.5 Q73.5 69 78 67.5 Q80 66.5 80 55.5 Z" fill="#fff"/>' +
+              '<ellipse class="emma-iris" cx="73.2" cy="60.8" rx="5.5" ry="7" fill="url(#em-iris)"/>' +
+              '<path class="emma-iris" d="M67.9 58 Q73.2 53 78.5 58 Q73.2 60 67.9 58 Z" fill="#1e6b8a" opacity="0.6"/>' +
+              '<ellipse class="emma-pupil" cx="73.2" cy="61" rx="2.2" ry="3.3" fill="#132433"/>' +
+              '<ellipse class="emma-iris" cx="73.2" cy="65.8" rx="3.2" ry="1.4" fill="#c8fbf2" opacity="0.7"/>' +
+              '<circle class="emma-hl-big" cx="70.6" cy="56.8" r="2.2" fill="#fff"/>' +
+              '<circle class="emma-hl-sm" cx="76.2" cy="64" r="1" fill="#fff" opacity="0.9"/>' +
+              '<path d="M81.2 56.5 Q79.5 51.8 73.5 51.2 Q67.5 51.6 65.5 55.5 L66.7 56.5 Q68.2 53.8 73.4 53.6 Q78.2 53.8 79.7 57 Z" fill="#3f4254"/>' +
+              '<path d="M80.2 54.5 L83 53 Q81.2 52.6 79.4 53.6 Z" fill="#3f4254"/>' +
+              '<path d="M69 68 Q73.5 69.6 78 68" stroke="rgba(90,86,120,0.45)" stroke-width="1" fill="none" stroke-linecap="round"/>' +
             '</g>' +
           '</g>' +
         '</g>' +
 
-        /* ---- closed happy eyes (^ ^) ---- */
+        /* ---- closed eyes ---- */
         '<g class="emma-eyes-closed" opacity="0">' +
-          '<path d="M39.5 62 Q46.5 54.5 53.5 62" stroke="#262a45" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
-          '<path d="M66.5 62 Q73.5 54.5 80.5 62" stroke="#262a45" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
-          '<path d="M39 59.5 L36.8 57.8" stroke="#262a45" stroke-width="1.6" stroke-linecap="round"/>' +
-          '<path d="M81 59.5 L83.2 57.8" stroke="#262a45" stroke-width="1.6" stroke-linecap="round"/>' +
+          '<path d="M40 61.5 Q46.5 55 53 61.5" stroke="#3f4254" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+          '<path d="M67 61.5 Q73.5 55 80 61.5" stroke="#3f4254" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
         '</g>' +
 
-        /* ---- nose / mouth ---- */
-        '<path d="M59.6 71.5 Q60.6 72.2 60 73" stroke="rgba(190,125,100,0.6)" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
-        '<path class="emma-mouth" d="M56 77.5 Q60 79.5 64 77.5" stroke="#e0697e" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<ellipse class="emma-mouth-talk" cx="60" cy="78.5" rx="4.2" ry="3.4" fill="#b4485c" opacity="0"/>' +
+        /* ---- beauty mark, nose, mouth ---- */
+        '<circle cx="38.6" cy="69.8" r="0.75" fill="#5a5064"/>' +
+        '<path d="M59.6 71.5 Q60.6 72.2 60 73" stroke="rgba(180,125,105,0.55)" stroke-width="1" fill="none" stroke-linecap="round"/>' +
+        '<path class="emma-mouth" d="M56.5 78 Q60 79 63.5 78" stroke="#c66a78" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<ellipse class="emma-mouth-talk" cx="60" cy="78.8" rx="4" ry="3.2" fill="#a05a68" opacity="0"/>' +
 
-        /* ---- bangs (drawn over forehead, brows drawn over bangs) ---- */
-        '<path d="M31 58 Q28 24 60 21 Q92 24 89 58 Q87 44 82 39 Q84 52 77 47 Q79 36 70 34 Q73 46 62 44 Q52 45 54 35 Q45 36 47 47 Q41 51 40 40 Q34 45 31 58 Z" fill="url(#em-hair)"/>' +
-        '<path d="M54 35 Q56 42 62 44 Q52 45 54 35 Z" fill="url(#em-hair-dk)" opacity="0.45"/>' +
-        '<path d="M70 34 Q68 42 62 44 Q73 46 70 34 Z" fill="url(#em-hair-dk)" opacity="0.35"/>' +
-        /* angel-ring highlight */
-        '<path d="M38 31 Q48 23 60 23 Q74 23 82 31 Q72 28 60 28 Q48 28 38 31 Z" fill="rgba(255,255,255,0.5)" filter="url(#em-blur)"/>' +
+        /* ---- bangs: white, choppy, over the brows ---- */
+        '<path d="M31 60 Q28 24 60 21 Q92 24 89 60 Q87 45 81 40 Q83 55 76 49 Q78 37 69 34 Q72 48 61 45 Q51 46 53 35 Q45 36 47 48 Q40 52 41 40 Q35 45 31 60 Z" fill="url(#em-hairW)"/>' +
+        '<path d="M53 35 Q55 42 61 45 Q51 46 53 35 Z" fill="#d9d9e8" opacity="0.7"/>' +
+        '<path d="M69 34 Q67 42 61 45 Q72 48 69 34 Z" fill="#d9d9e8" opacity="0.55"/>' +
+        /* teal strands mixed into the bangs */
+        '<path d="M47 48 Q46 42 48 37 Q50 43 49 48 Z" fill="url(#em-hairIn)" opacity="0.8"/>' +
+        '<path d="M74 48 Q75 42 73 37 Q71 43 72 48 Z" fill="url(#em-hairIn)" opacity="0.8"/>' +
+        /* soft hair sheen */
+        '<path d="M40 30 Q50 24 62 24 Q52 27 46 33 Z" fill="rgba(255,255,255,0.6)" filter="url(#em-blur)"/>' +
 
-        /* ---- side locks over shoulders ---- */
-        '<path d="M31 50 Q25 76 30 100 Q36 92 35 72 Q35 58 31 50 Z" fill="url(#em-hair)"/>' +
-        '<path d="M89 50 Q95 76 90 100 Q84 92 85 72 Q85 58 89 50 Z" fill="url(#em-hair)"/>' +
-        '<path d="M34 56 Q31 76 33 92 Q36 86 35.5 70 Z" fill="url(#em-hair-dk)" opacity="0.4"/>' +
-        '<path d="M86 56 Q89 76 87 92 Q84 86 84.5 70 Z" fill="url(#em-hair-dk)" opacity="0.4"/>' +
+        /* ---- bob side pieces framing the face ---- */
+        '<path d="M31 50 Q26 68 31 84 Q38 80 36 64 Q36 55 31 50 Z" fill="url(#em-hairW)"/>' +
+        '<path d="M89 50 Q94 68 89 84 Q82 80 84 64 Q84 55 89 50 Z" fill="url(#em-hairW)"/>' +
+        '<path d="M33 62 Q31 74 33 81 Q36 77 35.5 66 Z" fill="url(#em-hairIn)" opacity="0.75"/>' +
+        '<path d="M87 62 Q89 74 87 81 Q84 77 84.5 66 Z" fill="url(#em-hairIn)" opacity="0.75"/>' +
 
-        /* ---- ahoge ---- */
-        '<path d="M56 22 Q50 10 61 6 Q55 12 60 16 Q64 8 70 12 Q62 12 64 21 Q60 17 56 22 Z" fill="url(#em-hair)"/>' +
+        /* ---- ahoge (small, subtle) ---- */
+        '<path d="M62 21 Q60 12 68 9 Q63 14 66 17 Q69 13 73 15 Q67 16 67.5 22 Q64.5 18 62 21 Z" fill="url(#em-hairW)"/>' +
 
-        /* ---- brows (over bangs, anime style) ---- */
-        '<path class="emma-brow-l" d="M40 47 Q46 44.5 52 46.5" stroke="#8d78d8" stroke-width="1.9" fill="none" stroke-linecap="round" opacity="0.95"/>' +
-        '<path class="emma-brow-r" d="M68 46.5 Q74 44.5 80 47" stroke="#8d78d8" stroke-width="1.9" fill="none" stroke-linecap="round" opacity="0.95"/>' +
+        /* ---- brows (pale, over bangs) ---- */
+        '<path class="emma-brow-l" d="M40.5 47.5 Q46 45.5 51.5 47" stroke="#b8bac9" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.95"/>' +
+        '<path class="emma-brow-r" d="M68.5 47 Q74 45.5 79.5 47.5" stroke="#b8bac9" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.95"/>' +
 
         /* ---- accents ---- */
         '<g class="emma-sparkle" opacity="0">' +
-          '<path d="M98 38 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" fill="#ffe066"/>' +
-          '<path d="M20 46 l1.4 3.5 3.5 1.4 -3.5 1.4 -1.4 3.5 -1.4 -3.5 -3.5 -1.4 3.5 -1.4 Z" fill="#ffe066"/>' +
+          '<path d="M98 38 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" fill="#a2f2e6"/>' +
+          '<path d="M20 46 l1.4 3.5 3.5 1.4 -3.5 1.4 -1.4 3.5 -1.4 -3.5 -3.5 -1.4 3.5 -1.4 Z" fill="#a2f2e6"/>' +
         '</g>' +
         '<g class="emma-heart" opacity="0">' +
-          '<path d="M99 58 c-2 -2.8 -6.2 -1.3 -6.2 1.7 c0 2.5 3 4.5 6.2 6.7 c3.2 -2.2 6.2 -4.2 6.2 -6.7 c0 -3 -4.2 -4.5 -6.2 -1.7 Z" fill="#ff8fa3"/>' +
+          '<path d="M99 58 c-2 -2.8 -6.2 -1.3 -6.2 1.7 c0 2.5 3 4.5 6.2 6.7 c3.2 -2.2 6.2 -4.2 6.2 -6.7 c0 -3 -4.2 -4.5 -6.2 -1.7 Z" fill="#f5aeb8"/>' +
         '</g>' +
 
         '</g>' +
@@ -160,7 +160,7 @@
     if (!container) return;
     container.innerHTML = SVG;
     host = container;
-    setEmotion('happy');
+    setEmotion('neutral');
   }
 
   function setEmotion(name) {
@@ -182,12 +182,12 @@
     });
     var bl = q('.emma-brow-l');
     var br = q('.emma-brow-r');
-    if (bl) bl.setAttribute('transform', 'translate(0 ' + e.browY + ') rotate(' + e.browL + ' 46 46)');
-    if (br) br.setAttribute('transform', 'translate(0 ' + e.browY + ') rotate(' + (-e.browL) + ' 74 46)');
+    if (bl) bl.setAttribute('transform', 'translate(0 ' + e.browY + ') rotate(' + e.browL + ' 46 47)');
+    if (br) br.setAttribute('transform', 'translate(0 ' + e.browY + ') rotate(' + (-e.browL) + ' 74 47)');
     var m = q('.emma-mouth');
     if (m) {
       m.setAttribute('d', e.mouth);
-      m.setAttribute('fill', /Z\s*$/.test(e.mouth) ? 'rgba(180,72,92,0.95)' : 'none');
+      m.setAttribute('fill', /Z\s*$/.test(e.mouth) ? 'rgba(160,90,104,0.95)' : 'none');
     }
     qa('.emma-blush').forEach(function (el) { el.setAttribute('opacity', String(e.blush)); });
     var sp = q('.emma-sparkle');
